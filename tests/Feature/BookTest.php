@@ -62,6 +62,16 @@ class BookTest extends TestCase
             ]);
     }
 
+    public function testRetrieveExternalBookSuccessfully()
+    {
+        $this->json('GET', 'api/external-books', ['Accept' => 'application/json'])
+            ->assertStatus(200)
+            ->assertJson([
+            "status_code"=> 200,
+            "status" =>  "success",
+            ]);
+    }
+
     public function testUpdatedBookSuccessfully()
     {
         factory(Book::class)->create([

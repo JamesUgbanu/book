@@ -20,8 +20,9 @@ class ApiController extends Controller
         try {
             $client = new Client();
             $book = $client->get('https://www.anapioficeandfire.com/api/books?name='.$request->name);
-            return $this->responseJson($book->getStatusCode(), "success", $books);     
+            return $this->responseJson($book->getStatusCode(), "success", json_decode($book->getBody()));     
         }  catch (\Exception $ex) {
+          error_log($ex);
             return $this->responseJson(500, "error", null, "Server error");
           }    
       }
