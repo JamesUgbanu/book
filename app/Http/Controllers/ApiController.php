@@ -10,7 +10,12 @@ use App\Book;
 
 class ApiController extends Controller
 {
-    //Method to get book from an external book api
+    /**
+     * GET /endpoint/bookName
+     * Should return 200 with data array
+     *
+     * @return void
+     */
       public function getExternalBook(Request $request) {
         try {
             $client = new Client();
@@ -21,13 +26,18 @@ class ApiController extends Controller
           }    
       }
 
-      //Method to add a book
+      /**
+     * POST /endpoint
+     * Should return 201 with data array
+     *
+     * @return void
+     */
       public function addBook(Request $request) {
           try {
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string',
                 'isbn' => 'required|string|max:20',
-                'authors' => 'required|array',
+                'authors' => 'required',
                 'number_of_pages' => 'required|integer|min:1',
                 'publisher' => 'required|string',
                 'country' => 'required|string',
@@ -44,7 +54,12 @@ class ApiController extends Controller
           }
       }
 
-      //Method to get all books
+      /**
+     * GET /endpoint
+     * Should return 200 with data array
+     *
+     * @return void
+     */
       public function getAllBooks(Request $request) {
         try {
             $country = $request->country;
@@ -62,7 +77,12 @@ class ApiController extends Controller
           }
       }
   
-      //Method to get book by id
+      /**
+     * GET /endpoint/{id}
+     * Should return 200 with data array
+     *
+     * @return void
+     */
       public function getBook($id) {
           try {
             if (Book::where('id', $id)->exists()) {
@@ -77,7 +97,12 @@ class ApiController extends Controller
           }
       }
   
-      //Method to get update a book by id
+     /**
+     * PUT /endpoint/{id}
+     * Should return 204 with data array
+     *
+     * @return void
+     */
       public function updateBook(Request $request, $id) {
           try {
             $validator = Validator::make($request->all(), [
@@ -106,7 +131,12 @@ class ApiController extends Controller
           }
       }
   
-      //Method to delete a book by id
+      /**
+     * DELETE /endpoint/{id}
+     * Should return 200 with data array
+     *
+     * @return void
+     */
       public function deleteBook($id) {
         try {
             if(Book::where('id', $id)->exists()) {
@@ -121,7 +151,12 @@ class ApiController extends Controller
           }
       }
 
-      //Helper method
+      /**
+     * Helper function
+     * Should return response in JSOn
+     *
+     * @return void
+     */
       public function responseJson($status_code, $status, $data=null, $message=null) {
         return response()->json([
             "status_code"=> $status_code,
