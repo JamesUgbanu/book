@@ -4,10 +4,16 @@ Make REST API CRUD Laravel
 ## Installation
 
 Just clone the project to anywhere in your computer.
+cd to book
 
 To install crud API laravel :
-1. You can change .env for connect database.
-2. you can use migrate database first with <code>php artisan migrate</code> for import database tou your database.
+1. Add your database connection settings to .env. -> Example of mine <code>DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=book
+DB_USERNAME=root
+DB_PASSWORD=</code>
+2. Migrate database with <code>php artisan migrate</code> to create your database.
 3. <code>php artisan serve</code> or <code>php artisan serve --port=8080</code> to run on port 8080
 4. Add new book : http://localhost:8080/api/v1/books (POST)
 7. View All books : http://localhost:8080/api/v1/books (GET) -> you can add query string to the endpoint <code>http://localhost:8080/api/v1/books?country=nigeria</code>
