@@ -10,26 +10,18 @@ use App\Book;
 
 class ApiController extends Controller
 {
-    //
-
+    //Method to get book from an external book api
       public function getExternalBook(Request $request) {
         try {
             $client = new Client();
             $book = $client->get('https://www.anapioficeandfire.com/api/books?name='.$request->name);
-            return response()->json([
-                "status_code"=> $book->getStatusCode(),
-                "status"=> "success",
-                "data"=> json_decode($book->getBody()),
-        ], $book->getStatusCode());
-        
+            return $this->responseJson($book->getStatusCode(), "success", $books);     
         }  catch (\Exception $ex) {
-            return response()->json([
-                "status_code"=> 500,
-                "message" => "Server error"
-            ], 500);
+            return $this->responseJson(500, "error", null, "Server error");
           }    
       }
 
+      //Method to add a book
       public function addBook(Request $request) {
           try {
             $validator = Validator::make($request->all(), [
@@ -42,36 +34,17 @@ class ApiController extends Controller
                 'release_date' => 'required|date_format:Y-m-d',
             ]);
             if ($validator->fails()) {
-                return response()->json([
-                    "status_code"=> 200,
-                    "status"=> "errror",
-                    "message"=> $validator->messages(),
-                ], 200);
+                return $this->responseJson(200, "error", null, $validator->messages());
             }
-            $book = new Book;
-            $book->name = $request->name;
-            $book->isbn = $request->isbn;
-            $book->authors = $request->authors;
-            $book->number_of_pages = $request->number_of_pages;
-            $book->publisher = $request->publisher;
-            $book->country = $request->country;
-            $book->release_date = $request->release_date;
-            $book->save();
-            
-            return response()->json([
-                "status_code"=> 201,
-                "status"=> "success",
-                "data"=> $book,
-            ], 201);
+            $book = Book::create($request->all());
+            return $this->responseJson(201, "success", $book);
 
           } catch (\Exception $ex) {
-            return response()->json([
-                "status_code"=> 500,
-                "message" => "Server error"
-            ], 500);
+            return $this->responseJson(500, "error", null, "Server error");
           }
       }
 
+      //Method to get all books
       public function getAllBooks(Request $request) {
         try {
             $country = $request->country;
@@ -82,118 +55,79 @@ class ApiController extends Controller
                  ->where('publisher', 'like', "%{$publisher}%")
                  ->where('release_date', 'like', "%{$release_date}%")
                  ->get();
-
-            return response()->json([
-                "status_code"=> 200,
-                "status"=> "success",
-                "data"=> $books,
-        ], 200);
+            return $this->responseJson(200, "success", $books);
 
         } catch (\Exception $ex) {
-            return response()->json([
-                "status_code"=> 500,
-                "message" => "Server error"
-            ], 500);
+            return $this->responseJson(500, "error", null, "Server error");
           }
       }
   
-  
+      //Method to get book by id
       public function getBook($id) {
           try {
             if (Book::where('id', $id)->exists()) {
                 $book = Book::where('id', $id)->get();
-                return response()->json([
-                    "status_code"=> 200,
-                    "status"=> "success",
-                    "data"=> $book,
-                ], 200);
-              } 
-                return response()->json([
-                  "status_code"=> 404,
-                  "status"=> "success",
-                  "message" => "Book not found"
-                ], 404);
+                return $this->responseJson(200, "success", $book);
+              }
+
+              return $this->responseJson(200, "success", null, "Book not found");
+
           } catch (\Exception $ex) {
-            return response()->json([
-                "status_code"=> 500,
-                "message" => "Server error"
-            ], 500);
+            return $this->responseJson(500, "error", null, "Server error");
           }
       }
   
+      //Method to get update a book by id
       public function updateBook(Request $request, $id) {
           try {
             $validator = Validator::make($request->all(), [
                 'name' => 'string',
                 'isbn' => 'string|max:20',
-                'authors' => 'array',
                 'number_of_pages' => 'integer|min:1',
                 'publisher' => 'string',
                 'country' => 'string',
                 'release_date' => 'date_format:Y-m-d',
             ]);
             if ($validator->fails()) {
-                return response()->json([
-                    "status_code"=> 200,
-                    "status"=> "errror",
-                    "message"=> $validator->messages(),
-                ], 200);
+                return $this->responseJson(200, "error", null, $validator->messages());
             }
-            if (Book::where('id', $id)->exists()) {
-                $book = Book::find($id);
-                $book->name = is_null($request->name) ? $book->name : $request->name;
-                $book->isbn = is_null($request->isbn) ? $book->isbn : $request->isbn;
-                $book->authors = is_null($request->authors) ? $book->authors : $request->authors;
-                $book->number_of_pages = is_null($request->number_of_pages) ? $book->number_of_pages : $request->number_of_pages;
-                $book->publisher = is_null($request->publisher) ? $book->publisher : $request->publisher;
-                $book->country = is_null($request->country) ? $book->country : $request->country;
-                $book->release_date = is_null($request->release_date) ? $book->release_date : $request->release_date;
-                $book->update();
-    
-                return response()->json([
-                    "status_code"=> 200,
-                    "status"=> "success",
-                    "message" => "The book ".$book->name." was updated successfully",
-                    "data"=> $book,
-                ], 200);
-                } 
-                return response()->json([
-                    "status_code"=> 404,
-                    "status"=> "success",
-                    "message" => "Book not found"
-                ], 404);
+            
+            $book = Book::find($id);
+            $book->update($request->all());
+
+            if($book) {
+                return $this->responseJson(200, "success",  $book, "The book ".$book->name." was updated successfully");
+              
+            }
+            return $this->responseJson(200, "success",  null, "Book not found");
               
           } catch (\Exception $ex) {
-            return response()->json([
-                "status_code"=> 500,
-                "message" => "Server error"
-            ], 500);
+            return $this->responseJson(500, "error", null, "Server error");
           }
       }
   
+      //Method to delete a book by id
       public function deleteBook($id) {
         try {
             if(Book::where('id', $id)->exists()) {
                 $book = Book::find($id);
                 $book->delete();
-                return response()->json([
-                    "status_code"=> 204,
-                    "status"=> "success",
-                    "message" => "The book ".$book->name." was deleted successfully",
-                    "data"=> [],
-                ], 202);
-              } 
-                return response()->json([
-                    "status_code"=> 404,
-                    "status"=> "success",
-                    "message" => "Book not found"
-                ], 404);
+                return $this->responseJson(204, "success",  [], "The book ".$book->name." was deleted successfully");
+              }
+              return $this->responseJson(200, "success",  null, "Book not found");
 
         } catch (\Exception $ex) {
-            return response()->json([
-                "status_code"=> 500,
-                "message" => "Server error"
-            ], 500);
+            return $this->responseJson(500, "error", null, "Server error");
           }
+      }
+
+      //Helper method
+      public function responseJson($status_code, $status, $data=null, $message=null) {
+        return response()->json([
+            "status_code"=> $status_code,
+            "status" =>  $status,
+            "data" => $data,
+            "message" => $message,
+        ], $status_code);
       }
 }
